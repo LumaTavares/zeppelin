@@ -8,13 +8,14 @@ from django.contrib.auth.models import User
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from apps.employee.models import Employee
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.mail import send_mail
 from django.conf import settings
-
+from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
@@ -106,10 +107,28 @@ class PasswordResetConfirmView(viewsets.ModelViewSet):
         user.save()
         return Response({"detail": "Senha alterada com sucesso."}, status=status.HTTP_200_OK)
     
+    
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me(request):
     user = request.user
+
+    # tenta buscar Employee pelo email do user
+    try:
+        employee = Employee.objects.get(e_mail=user.email)
+        employee_data = {
+            "role": employee.role,
+            "organization": employee.employee_organization.name if employee.employee_organization else None,
+            "position": employee.employee_position.id if employee.employee_position else None
+        }
+    except Employee.DoesNotExist:
+        employee_data = None
+
+    try :
+        organization = user.organization.name if user.organization else None
+    except:
+        organization = None
+
     return Response({
         "id": user.id,
         "username": user.username,
@@ -119,3 +138,4 @@ def me(request):
         "is_staff": user.is_staff,
         "is_active": user.is_active,
     })
+

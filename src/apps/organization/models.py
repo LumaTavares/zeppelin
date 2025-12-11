@@ -31,7 +31,7 @@ class OrganizationType(Base):
     Represents a type of organization.
     """
 
-    name = models.CharField(max_length=200, help_text= "organization type's name", unique=True)
+    name = models.CharField(max_length=200, help_text= "organization type's name")
     description = models.TextField(help_text= "organization type's description")
 
     category_organization_type = models.ForeignKey(OrganizationCategory, on_delete=models.CASCADE,help_text= "category",null=True, blank=True)
